@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Infinite canvas drawing example</title>
+    <script src="../infinite-canvas.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        canvas {
+            border: 1px dotted orangered;
+        }
+    </style>
+</head>
+<body>
+    Draw anywhere within the canvas. View the sourcecode to understand how it works
+
+    <script>
+        // create the canvas element and append it to the document
+        var canvas = document.createElement("canvas");
+        var ctx = canvas.getContext("2d");
+
+        document.body.appendChild(canvas);
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Initialize the infinite canvas buffer underneath the context
+        var inf_ctx = infiniteCanvas.initialize(ctx);
+
+        // Prepare some variables for the dragging gestures logic
+        var mouseIsDown = false;
+        var middleOrRightIsDown = false;
+        var previousMousePosition;
+
+        canvas.addEventListener("mousedown", function (event) {
+            // 1 is leftmousebutton, 2 is middle, 3 is left
+            if (event.which === 1) {
+                mouseIsDown = true;
+            } else {
+                middleOrRightIsDown = true;
+            }
+        });
+
+        window.addEventListener("mouseup", function (event) {
+            // When leftmousebutton is released, synchronise the newly
+            // drawn scribbles to the underlying buffer chunks
+            if (event.which === 1) {
+                mouseIsDown = false;
+                inf_ctx.updateChunks();
+            } else {
+                middleOrRightIsDown = false;
+            }
+        });
+
+        window.addEventListener("mousemove", function (event) {
+            var newMousePosition = {x: event.offsetX, y: event.offsetY};
+
+            if (mouseIsDown) {
+                // draw lines when dragging with the left mosue button
+                if (previousMousePosition) {
+                    ctx.beginPath();
+                    ctx.moveTo(previousMousePosition.x, previousMousePosition.y);
+                    ctx.lineTo(newMousePosition.x     , newMousePosition.y);
+                    ctx.stroke();
+                }
+            } else if (middleOrRightIsDown) {
+                // pan the canvas whenever dragging with the middle or right mouse button
+                var dx = previousMousePosition.x - newMousePosition.x;
+                var dy = previousMousePosition.y - newMousePosition.y;
+                // Canvas gets really messy if you do not clear it up :)
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                inf_ctx.moveBy(dx, dy);
+            }
+
+            previousMousePosition = newMousePosition;
+        });
+    </script>
+</body>
+</html>
