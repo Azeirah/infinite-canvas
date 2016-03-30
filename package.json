@@ -1,0 +1,27 @@
+{
+  "name": "az-infinite-canvas",
+  "version": "0.1.0",
+  "description": "An infinitely expanding chunked canvas buffer for your infinite drawing needs",
+  "main": "infinite-canvas.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Azeirah/infinite-canvas.git"
+  },
+  "keywords": [
+    "canvas",
+    "drawing",
+    "infinite",
+    "lazy-loading"
+  ],
+  "author": "Martijn Brekelmans",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Azeirah/infinite-canvas/issues"
+  }
+}

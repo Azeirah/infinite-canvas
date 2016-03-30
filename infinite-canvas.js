@@ -1,3 +1,10 @@
+// chunk loading
+// problems?
+// 1. server latency
+// I'd imagine a workflow where when you pad outside of existing chunks, that the client asks the server
+// if a chunk exists at that position, if it does, load it from the server (here's another problem #2), if it doesn't,
+// save the chunk to the server.
+
 (function () {
     // Chunksize might not be optimal. It has been found that really small chunk sizes
     // have a (very) negative impact on performance, other than that, not much experimentation
@@ -66,7 +73,7 @@
             };
         }
 
-        function getChunk(x, y) {
+        function getChunk(chunkId) {
             // we serialize the coordinate of a chunk with a key, computed from its x and y coordinates
             // say we have a chunk at {x: 1, y: 3}, then our chunks dict looks like
             // {
@@ -74,15 +81,13 @@
             //  "1, 3": ..chunkData
             //  ...
             // }
-            var chunkKey = constructChunkKey(x, y);
-
             // if the chunk doesn't exist, create it!
-            if (Object.keys(infinity.chunks).indexOf(chunkKey) === -1) {
-                infinity.chunks[chunkKey] = ctx.createImageData(configuration.chunkWidth, configuration.chunkHeight);
+            if (Object.keys(infinity.chunks).indexOf(chunkId) === -1) {
+                infinity.chunks[chunkId] = ctx.createImageData(configuration.chunkWidth, configuration.chunkHeight);
             }
 
             // now that we're sure that it exists, return the motherfucker <3
-            return infinity.chunks[chunkKey];
+            return infinity.chunks[chunkId];
         }
 
         function renderChunks(chunks) {
@@ -95,7 +100,7 @@
                     ctx.drawImage(infinity.images[key], renderCoordinate.x, renderCoordinate.y);
                 } else {
                     // fall back to putImageData if the createImageData is not supported in the browser
-                    var chunk = getChunk(coord.x, coord.y);
+                    var chunk = getChunk(key);
                     ctx.putImageData(chunk, renderCoordinate.x, renderCoordinate.y);
                 }
             });
@@ -117,7 +122,7 @@
             for (var x = 0; x <= chunksOnXAxis; x++) {
                 for (var y = 0; y <= chunksOnYAxis; y++) {
                     var chunkKey               = constructChunkKey(topLeft.x + x, topLeft.y + y);
-                    chunksInViewport[chunkKey] = getChunk(topLeft.x + x, topLeft.y + y);
+                    chunksInViewport[chunkKey] = getChunk(chunkKey);
                 }
             }
 
@@ -200,6 +205,35 @@
             if (render) {
                 renderChunks(getChunksInViewport());
             }
+        };
+
+        infinity.refresh = function () {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            infinity.moveBy(0, 0);
+        };
+
+        infinity.getAllChunks = function () {
+            return infinity.chunks;
+        };
+
+        // expects a chunk-id, ex "2, 3" and a chunk, which can be any image-like object supported by ctx.drawImage and ctx.putImageData
+        infinity.loadChunk = function (chunkId, chunk) {
+            offscreenRenderCtx.clearRect(0, 0, configuration.chunkWidth, configuration.chunkHeight);
+            if (chunk instanceof ImageData) {
+                offscreenRenderCtx.putImageData(chunk, 0, 0);
+            } else {
+                offscreenRenderCtx.drawImage(chunk, 0, 0);
+            }
+            chunk = offscreenRenderCtx.getImageData(0, 0, configuration.chunkWidth, configuration.chunkHeight);
+
+            infinity.chunks[chunkId] = chunk;
+            if (window.createImageBitmap) {
+                createImageBitmap(offscreenRenderCtx).then(function (bmp) {
+                    infinity.images[chunkId] = bmp;
+                    infinity.refresh();
+                });
+            }
+            infinity.refresh();
         };
 
         return infinity;
