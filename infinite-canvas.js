@@ -32,7 +32,9 @@
             // stores ImageData per chunk, used to draw on
             chunks: {},
             // stores ImageBitmap per chunk, used for rendering, significantly faster than ImageData rendering
-            images: {}
+            images: {},
+            canvas: canvas,
+            ctx: ctx
         };
 
         function constructChunkKey(x, y) {
