@@ -1,10 +1,3 @@
-// chunk loading
-// problems?
-// 1. server latency
-// I'd imagine a workflow where when you pad outside of existing chunks, that the client asks the server
-// if a chunk exists at that position, if it does, load it from the server (here's another problem #2), if it doesn't,
-// save the chunk to the server.
-
 (function () {
     // Chunksize might not be optimal. It has been found that really small chunk sizes
     // have a (very) negative impact on performance, other than that, not much experimentation
@@ -68,6 +61,8 @@
         }
 
         function chunkCoordToRenderCoord(x, y) {
+            // Takes a chunk position
+            // returns corresponding (x, y) coordinates in the viewport
             return {
                 x: (x * configuration.chunkWidth) - infinity.position.x,
                 y: (y * configuration.chunkHeight) - infinity.position.y
@@ -181,7 +176,7 @@
                 }
 
                 // ..clear the visible part of the chunk
-                offscreenRenderCtx.clearRect(putLocation.x, putLocation.y, configuration.chunkWidth, configuration.chunkHeight);
+                offscreenRenderCtx.clearRect(putLocation.x, putLocation.y, width, height);
                 // ..render the contents of the main canvas to the offscreen context
                 offscreenRenderCtx.drawImage(canvas, chunkSourceCoord.x, chunkSourceCoord.y, width, height, putLocation.x, putLocation.y, width, height);
                 // ..serialize the offscreen context
