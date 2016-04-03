@@ -16,7 +16,6 @@
 
         var canvas                   = ctx.canvas;
 
-        // This function needs to take into account asynchronous loading of position data later!
         var infinity = {
             position: {
                 x: 0,
@@ -26,7 +25,8 @@
             chunks: {},
             canvas: canvas,
             ctx: ctx,
-            configuration: configuration
+            configuration: configuration,
+            debugMode: false
         };
 
         function constructChunkKey(x, y) {
@@ -180,6 +180,10 @@
                 // ..render the contents of the main canvas to the offscreen context
                 offscreenRenderCtx.drawImage(canvas, chunkSourceCoord.x, chunkSourceCoord.y, width, height, putLocation.x, putLocation.y, width, height);
                 // ..serialize the offscreen context
+                if (configuration.debugMode) {
+                    offscreenRenderCtx.strokeRect(0, 0, configuration.chunkWidth, configuration.chunkHeight);
+                    offscreenRenderCtx.fillText(key, 15, 15);
+                }
                 infinity.chunks[key].src = offscreenRenderCtx.canvas.toDataURL();
                 // ..finally, clear up the offscreen context so the contents won't be dupllicated to other chunks later in this loop
                 offscreenRenderCtx.clearRect(0, 0, configuration.chunkWidth, configuration.chunkHeight);
