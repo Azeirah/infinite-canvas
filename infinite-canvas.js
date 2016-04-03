@@ -78,7 +78,7 @@
             //  ...
             // }
             // if the chunk doesn't exist, create it!
-            if (Object.keys(infinity.chunks).indexOf(chunkId) === -1) {
+            if (! infinity.chunks[chunkId]) {
                 infinity.chunks[chunkId] = new Image(configuration.chunkWidth, configuration.chunkHeight);
             }
 
@@ -96,8 +96,7 @@
                     ctx.drawImage(infinity.chunks[key], renderCoordinate.x, renderCoordinate.y);
                 } catch (error) {
                     if (error.name == "NS_ERROR_NOT_AVAILABLE") {
-                        // failed! This doesn't matter however, it easily gets painted hundreds of times
-                        // in a few seconds.
+                        // failed! Doesn't matter much for rendering, it will be rerendered the next frame
                     } else {
                         throw error;
                     }
@@ -179,11 +178,11 @@
                 offscreenRenderCtx.clearRect(putLocation.x, putLocation.y, width, height);
                 // ..render the contents of the main canvas to the offscreen context
                 offscreenRenderCtx.drawImage(canvas, chunkSourceCoord.x, chunkSourceCoord.y, width, height, putLocation.x, putLocation.y, width, height);
-                // ..serialize the offscreen context
                 if (configuration.debugMode) {
                     offscreenRenderCtx.strokeRect(0, 0, configuration.chunkWidth, configuration.chunkHeight);
                     offscreenRenderCtx.fillText(key, 15, 15);
                 }
+                // ..serialize the offscreen context
                 infinity.chunks[key].src = offscreenRenderCtx.canvas.toDataURL();
                 // ..finally, clear up the offscreen context so the contents won't be dupllicated to other chunks later in this loop
                 offscreenRenderCtx.clearRect(0, 0, configuration.chunkWidth, configuration.chunkHeight);
